@@ -326,7 +326,7 @@ document.querySelectorAll('.pill').forEach(p=> p.addEventListener('click', ()=>{
 }));
 // cards + navs actually upload
 document.querySelectorAll('.card, #navMerge, #navSplit, #navCompress').forEach(el=> el.addEventListener('click', ()=> fileInput.click()));
-bigUpload.addEventListener('click', ()=> fileInput.click());
+bigUpload.addEventListener('click', (e)=>{ e.stopPropagation(); fileInput.click(); });
 bigPickCenter.addEventListener('click', (e)=>{ e.stopPropagation(); fileInput.click(); });
 bigUpload.addEventListener('dragover', e=>{ e.preventDefault(); bigUpload.style.borderColor='#e53935'; bigUpload.style.background='#fff8f8'; });
 bigUpload.addEventListener('dragleave', ()=>{ bigUpload.style.borderColor='#e8a0a0'; bigUpload.style.background='#fff'; });
@@ -476,7 +476,7 @@ document.getElementById('sizeMinus').addEventListener('click',()=>{ base=Math.ma
 document.getElementById('sizePlus').addEventListener('click',()=>{ base=Math.min(220, base+10); sizeRange.value=base; });
 soundBtn.addEventListener('click', async ()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn){ await ensureAudio(); unlockAudioEls(); } }); // sound only on doc tear, not on toggle
 resetBtn.addEventListener('click',()=>{ holes=[]; holeCountEl.textContent='0 holes'; hctx.clearRect(0,0,holeCanvas.width,holeCanvas.height); });
-document.getElementById('pickBtn').addEventListener('click',()=> fileInput.click());
+document.getElementById('pickBtn').addEventListener('click',(e)=>{ e.stopPropagation(); e.preventDefault(); fileInput.click(); });
 fileInput.addEventListener('change',e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
 viewer.addEventListener('dragover',e=> e.preventDefault());
 viewer.addEventListener('drop',e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
@@ -502,6 +502,9 @@ function punch(cx,cy,p, rOverride){
 let isScrolling=false, startX=0, startY=0, startTime=0;
 const isTouchDevice = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 hit.addEventListener('pointerdown',e=>{
+  // sound only on doc - ignore clicks on UI
+  if(e.target.closest('button, input, a, .siteHeader, #viewerBar, #landing')) return;
+  if(e.target !== hit) return;
   const isTouch = e.pointerType==='touch';
   if(isTouch){
     // allow scrolling: don't preventDefault, don't capture immediately
