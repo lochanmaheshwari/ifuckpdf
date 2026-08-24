@@ -301,8 +301,11 @@ let holes=[], base=parseInt(sizeRange.value,10), soundOn=true, hasDoc=false, aud
 
 function showViewer(){ landing.style.display='none'; voidEl.style.display='block'; viewerWrap.style.display='flex'; backToTools.style.display='inline'; setTimeout(resizeCanvas,80); }
 function showLanding(){ landing.style.display='block'; voidEl.style.display='none'; viewerWrap.style.display='none'; backToTools.style.display='none'; }
-backToTools.addEventListener('click', showLanding);
-document.getElementById('homeLogo').addEventListener('click', showLanding);
+backToTools.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); showLanding(); });
+document.getElementById('homeLogo').addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); showLanding(); });
+document.getElementById('homeLogo').addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); });
+// also prevent hit from handling logo taps on phone
+hit.addEventListener('pointerdown', (e)=>{ if(e.target.closest('#homeLogo') || e.target.closest('.siteHeader')) return; }, true);
 
 // --- all things actually work ---
 function toast(msg, sub){
