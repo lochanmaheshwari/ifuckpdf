@@ -128,7 +128,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
   .siteHeader{height:56px; padding:0 10px}
   .siteHeader .login{font-size:12px}
   .siteHeader .signup{padding:7px 12px; font-size:12px}
-  .logoWrap{font-size:20px}
+  .logoWrap{font-size:20px; cursor:pointer}
   .logoImg{width:28px !important; height:28px !important}
   #landing{inset:56px 0 0 0}
   .landingInner{padding:18px 14px 40px}
@@ -156,7 +156,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
 <body>
 <header class="siteHeader">
   <div class="brand">
-    <div class="logoWrap">
+    <div class="logoWrap" id="homeLogo" style="cursor:pointer" title="Go to home">
       <span style="display:flex;align-items:center;gap:6px"><b>i</b> <img class="logoImg" src="fuck-logo.avif" alt="logo" style="width:34px;height:34px;border-radius:7px;object-fit:cover;border:1px solid #e8e8ef" onerror="this.style.display='none'"> <b>pdf</b></span>
     </div>
     <nav class="nav">
@@ -300,6 +300,7 @@ let holes=[], base=parseInt(sizeRange.value,10), soundOn=true, hasDoc=false, aud
 function showViewer(){ landing.style.display='none'; voidEl.style.display='block'; viewerWrap.style.display='flex'; backToTools.style.display='inline'; setTimeout(resizeCanvas,80); }
 function showLanding(){ landing.style.display='block'; voidEl.style.display='none'; viewerWrap.style.display='none'; backToTools.style.display='none'; }
 backToTools.addEventListener('click', showLanding);
+document.getElementById('homeLogo').addEventListener('click', showLanding);
 
 // --- all things actually work ---
 function toast(msg, sub){
