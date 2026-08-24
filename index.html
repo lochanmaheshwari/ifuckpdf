@@ -414,14 +414,12 @@ function ensureAudio(){
 ['pointerdown','touchstart','touchend','click'].forEach(ev=>{
   document.addEventListener(ev, ()=>{ if(!unlocked) ensureAudio(); }, {once:true, passive:true});
 });
-// also unlock audio elements for iOS silent switch
+// also unlock audio elements for iOS silent switch - DO NOT play all at once
 function unlockAudioEls(){
-  document.querySelectorAll('audio').forEach(a=>{
-    a.muted=false; a.volume=0.9;
-    const p=a.play(); if(p) p.then(()=>{ a.pause(); a.currentTime=0; }).catch(()=>{});
-  });
+  // iOS silent switch fix: just ensure AudioContext is running, don't play all 7 audios together
+  // previously this loop caused all sounds at once on Select Document tap on phone
+  try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch{}
 }
-document.addEventListener('touchstart', unlockAudioEls, {once:true, passive:true});
 moan.addEventListener('error',()=>{ soundBtn.textContent='⚠️ moan.mp3 missing'; });
 async function playMoan(p, r){
   if(!soundOn) return; await ensureAudio(); if(audioCtx && audioCtx.state==="suspended") await audioCtx.resume(); p=Math.max(0,Math.min(1,p));
