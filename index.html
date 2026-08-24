@@ -98,7 +98,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
 .page .textView{padding:32px 28px;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.65}
 .pageNum{position:absolute;top:8px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:4px 7px;border-radius:999px;pointer-events:none}
 #holeCanvas{position:absolute;left:0;top:0;pointer-events:none;z-index:5;display:block}
-#hit{position:absolute;left:0;top:0;z-index:6;cursor:crosshair;touch-action:pan-y}
+#hit{position:absolute;left:0;top:0;z-index:6;cursor:crosshair;touch-action:pan-y; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none}
 .viewerBtn{border:1px solid #ddd;background:#fff;color:#111;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
 .viewerBtn:hover{background:#111;color:#fff}
 .viewerBtn.primary{background:#e53935;color:#fff;border-color:#e53935}
@@ -121,13 +121,35 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
   .hero h1{font-size:34px}
 }
 @media(max-width:640px){
-  .grid{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr; gap:12px}
   .nav{display:none}
-  .hero h1{font-size:28px}
-  .siteHeader{height:56px}
+  .hero h1{font-size:26px; line-height:1.15}
+  .hero p{font-size:14px}
+  .siteHeader{height:56px; padding:0 10px}
+  .siteHeader .login{font-size:12px}
+  .siteHeader .signup{padding:7px 12px; font-size:12px}
+  .logoWrap{font-size:20px}
+  .logoImg{width:28px !important; height:28px !important}
   #landing{inset:56px 0 0 0}
+  .landingInner{padding:18px 14px 40px}
+  .bigUpload{padding:16px 12px; margin:16px auto}
+  .bigUpload h3{font-size:16px}
+  .bigUpload .cta{width:100%; justify-content:center}
   #viewerWrap{inset:56px 0 0 0}
+  #viewer{padding:10px 0 60px}
   #docStack{width:98vw}
+  .page{margin:0 auto 10px; border-radius:2px}
+  .page .docHtml{padding:18px 14px; font-size:13px}
+  #viewerBar{height:auto; min-height:44px; flex-wrap:wrap; padding:6px 8px; gap:6px}
+  #viewerBar .leftSmall{font-size:11px}
+  .viewerBtn{padding:5px 8px; font-size:11px}
+  .range{width:72px}
+  .count{font-size:11px; min-width:50px}
+}
+@media(max-width:380px){
+  .hero h1{font-size:22px}
+  .grid{gap:10px}
+  .card{padding:14px 12px; min-height:160px}
 }
 </style>
 </head>
@@ -448,7 +470,21 @@ function punch(cx,cy,p, rOverride){
   const d=document.createElement('div'); d.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${r*2}px;height:${r*2}px;margin-left:${-r}px;margin-top:${-r}px;border-radius:50%;border:1.4px solid #e53935;box-shadow:0 0 12px rgba(229,57,53,.6);pointer-events:none;z-index:80`; document.body.appendChild(d); d.animate([{transform:'scale(.55)',opacity:1},{transform:'scale(1.25)',opacity:0}],{duration:360,easing:'ease-out'}).onfinish=()=>d.remove();
   try{hint.classList.add('hide');}catch{}
 }
+// phone-friendly: tap to tear, drag to scroll - don't punch while scrolling
+let isScrolling=false, startX=0, startY=0, startTime=0;
+const isTouchDevice = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 hit.addEventListener('pointerdown',e=>{
+  const isTouch = e.pointerType==='touch';
+  if(isTouch){
+    // allow scrolling: don't preventDefault, don't capture immediately
+    startX=e.clientX; startY=e.clientY; startTime=Date.now(); isScrolling=false;
+    down=true; curP=e.pressure>0?e.pressure:0.5; hold0=Date.now(); last={x:e.clientX,y:e.clientY};
+    // don't punch yet on touch - wait for tap confirmation on pointerup
+    if(!isTouch){ punch(e.clientX,e.clientY,curP); }
+    clearInterval(holdT);
+    holdT=setInterval(()=>{ if(!down||isScrolling) return; const extra=Math.min(1,(Date.now()-hold0)/1050*0.7); const p=Math.min(1,curP+extra); if(holes.length && !isScrolling){ const h=holes[holes.length-1]; const tr=base*(0.55+p*0.9); if(tr>h.r){ h.r=tr; h.p=p; redraw(); } } },42);
+    return;
+  }
   e.preventDefault(); try{ hit.setPointerCapture(e.pointerId);}catch{}
   down=true; curP=e.pressure>0?e.pressure:0.5; hold0=Date.now(); last={x:e.clientX,y:e.clientY};
   punch(e.clientX,e.clientY,curP);
@@ -456,14 +492,35 @@ hit.addEventListener('pointerdown',e=>{
   holdT=setInterval(()=>{ if(!down) return; const extra=Math.min(1,(Date.now()-hold0)/1050*0.7); const p=Math.min(1,curP+extra); if(holes.length){ const h=holes[holes.length-1]; const tr=base*(0.55+p*0.9); if(tr>h.r){ h.r=tr; h.p=p; redraw(); } } },42);
 });
 hit.addEventListener('pointermove',e=>{
-  cursorEl.style.display='block'; cursorEl.style.left=e.clientX+'px'; cursorEl.style.top=e.clientY+'px';
-  const p=e.pressure>0?e.pressure:0.5; const sz=Math.max(12,base*(0.55+p*0.9)); cursorEl.style.width=sz*2+'px'; cursorEl.style.height=sz*2+'px';
-  if(!down) return; curP=p;
-  if(last && Math.hypot(e.clientX-last.x,e.clientY-last.y) < sz*0.38) return;
+  if(e.pointerType!=='touch'){
+    cursorEl.style.display='block'; cursorEl.style.left=e.clientX+'px'; cursorEl.style.top=e.clientY+'px';
+    const p=e.pressure>0?e.pressure:0.5; const sz=Math.max(12,base*(0.55+p*0.9)); cursorEl.style.width=sz*2+'px'; cursorEl.style.height=sz*2+'px';
+  }
+  if(!down) return;
+  if(e.pointerType==='touch'){
+    const dx=e.clientX-startX, dy=e.clientY-startY;
+    if(!isScrolling && Math.hypot(dx,dy) > 10){ isScrolling=true; }
+    if(isScrolling) return;
+    curP=e.pressure>0?e.pressure:0.5;
+    if(last && Math.hypot(e.clientX-last.x,e.clientY-last.y) < 28) return;
+    last={x:e.clientX,y:e.clientY}; punch(e.clientX,e.clientY,curP);
+    return;
+  }
+  curP=e.pressure>0?e.pressure:0.5;
+  if(last && Math.hypot(e.clientX-last.x,e.clientY-last.y) < Math.max(12,base*(0.55+curP*0.9))*0.38) return;
   last={x:e.clientX,y:e.clientY}; punch(e.clientX,e.clientY,curP);
 });
-hit.addEventListener('pointerup',()=>{ down=false; clearInterval(holdT); });
-hit.addEventListener('pointerleave',()=>{ cursorEl.style.display='none'; down=false; clearInterval(holdT); });
+hit.addEventListener('pointerup',e=>{
+  if(e.pointerType==='touch' && down && !isScrolling){
+    const dt=Date.now()-startTime; const dist=Math.hypot(e.clientX-startX, e.clientY-startY);
+    if(dt < 500 && dist < 12){
+      punch(e.clientX,e.clientY,curP);
+    }
+  }
+  down=false; isScrolling=false; clearInterval(holdT);
+});
+hit.addEventListener('pointercancel',()=>{ down=false; isScrolling=false; clearInterval(holdT); });
+hit.addEventListener('pointerleave',()=>{ if(!('ontouchstart' in window)) cursorEl.style.display='none'; down=false; isScrolling=false; clearInterval(holdT); });
 
 // file handling - all pages scrollable
 function showErr(m, where){ const el=where==='landing'?landingErr:viewerErr; el.textContent=m; el.style.display='block'; }
