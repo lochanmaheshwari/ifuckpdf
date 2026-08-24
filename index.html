@@ -373,8 +373,12 @@ window.addEventListener('resize', resizeCanvas);
 function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); unlocked=true; }
 document.addEventListener('pointerdown',()=>{ if(!unlocked) ensureAudio(); }, {once:true});
 moan.addEventListener('error',()=>{ soundBtn.textContent='⚠️ moan.mp3 missing'; });
-async function playMoan(p){
+async function playMoan(p, r){
   if(!soundOn) return; ensureAudio(); p=Math.max(0,Math.min(1,p));
+  // bigger hole -> higher pitch: map r 12..220 to 0..1
+  const holeNorm = Math.max(0, Math.min(1, ((r||base) - 12) / (220-12)));
+  const pitchFromHole = holeNorm * 0.55; // 0 to 0.55
+  const pitchFromPressure = p * 0.15; // small pressure add
   let pick; do{ pick = sounds[Math.floor(Math.random()*sounds.length)]; }while(sounds.length>1 && pick===prevPick); prevPick=pick;
   try{
     const resp=await fetch(pick); if(!resp.ok) throw new Error(resp.status);
@@ -402,14 +406,14 @@ async function playMoan(p){
       }
       srcBuf=peakBuf;
     }
-    const src=audioCtx.createBufferSource(); src.buffer=srcBuf; src.playbackRate.value=0.86+p*0.42+(Math.random()-0.5)*0.05;
+    const src=audioCtx.createBufferSource(); src.buffer=srcBuf; src.playbackRate.value=0.82 + pitchFromHole + pitchFromPressure + (Math.random()-0.5)*0.04; // bigger hole = higher
     const g=audioCtx.createGain(); g.gain.value=0.78+p*0.22; src.connect(g).connect(audioCtx.destination); src.start();
     // hard 3s cap even if buffer longer
     const playLen = Math.min(srcBuf.duration / src.playbackRate.value, 3.05);
     setTimeout(()=>{ try{src.stop();}catch{} }, playLen*1000+50); return;
   }catch(e){}
   try{
-    const el=audioEls[pick]||moan; const a=el.cloneNode(true); a.volume=0.9; a.playbackRate=0.9+p*0.4;
+    const el=audioEls[pick]||moan; const a=el.cloneNode(true); a.volume=0.9; a.playbackRate=0.85 + pitchFromHole*0.5 + p*0.15; // bigger hole = higher in fallback too
     // fallback 4s limit
     a.addEventListener('loadedmetadata', ()=>{ if(a.duration>3.1){ try{ a.currentTime=Math.max(0,(a.duration-3)/2); }catch{} } });
     await a.play();
@@ -418,7 +422,7 @@ async function playMoan(p){
   }catch(e){ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }
 }
 sizeRange.addEventListener('input',e=> base=parseInt(e.target.value,10));
-soundBtn.addEventListener('click',()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn) playMoan(0.5); });
+soundBtn.addEventListener('click',()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn) playMoan(0.5, base); });
 resetBtn.addEventListener('click',()=>{ holes=[]; holeCountEl.textContent='0 holes'; hctx.clearRect(0,0,holeCanvas.width,holeCanvas.height); });
 document.getElementById('pickBtn').addEventListener('click',()=> fileInput.click());
 fileInput.addEventListener('change',e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
@@ -438,7 +442,7 @@ function punch(cx,cy,p, rOverride){
   const r=rOverride||Math.max(12, base*(0.55+p*0.9));
   const seed=Math.floor(Math.random()*1e9);
   holes.push({x:pt.x,y:pt.y,r,p,seed}); holeCountEl.textContent=holes.length+' hole'+(holes.length!==1?'s':'');
-  drawTornHole(pt.x,pt.y,r,p,seed); playMoan(p);
+  drawTornHole(pt.x,pt.y,r,p,seed); playMoan(p, r);
   const d=document.createElement('div'); d.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${r*2}px;height:${r*2}px;margin-left:${-r}px;margin-top:${-r}px;border-radius:50%;border:1.4px solid #e53935;box-shadow:0 0 12px rgba(229,57,53,.6);pointer-events:none;z-index:80`; document.body.appendChild(d); d.animate([{transform:'scale(.55)',opacity:1},{transform:'scale(1.25)',opacity:0}],{duration:360,easing:'ease-out'}).onfinish=()=>d.remove();
   hint.classList.add('hide');
 }
