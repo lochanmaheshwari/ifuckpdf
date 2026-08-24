@@ -245,7 +245,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
   </div>
 </div>
 
-<div id="hint"><span class="dot"></span><span id="hintText">Click any card or the big upload - PDF opens scrollably, then tear</span></div>
+
 <div id="cursor"></div>
 <div id="toast"></div>
 <audio id="moan" src="moan.mp3" preload="auto"></audio>
@@ -268,6 +268,8 @@ let tornImg=null, tornPattern=null;
 })();
 const sizeRange=document.getElementById('sizeRange'), resetBtn=document.getElementById('resetBtn'), soundBtn=document.getElementById('soundBtn'), holeCountEl=document.getElementById('holeCount');
 const hint=document.getElementById('hint'), hintText=document.getElementById('hintText'), moan=document.getElementById('moan'), moan2=document.getElementById('moan2'), breath=document.getElementById('breath'), cursorEl=document.getElementById('cursor');
+// hint removed per user request - guard
+const safeHint = (fn)=>{ try{ if(hint && hintText) fn(); }catch{} };
 const sounds=['moan.mp3','moan2.mp3','breath.mp3','peak1.m4a','peak2.wav','peak3.mp3','peak4.wav']; const audioEls={'moan.mp3':moan,'moan2.mp3':moan2,'breath.mp3':breath,'peak1.m4a':document.getElementById('peak1'),'peak2.wav':document.getElementById('peak2'),'peak3.mp3':document.getElementById('peak3'),'peak4.wav':document.getElementById('peak4')}; let prevPick=null;
 const fileNameEl=document.getElementById('fileName'), pageInfoEl=document.getElementById('pageInfo'), backToTools=document.getElementById('backToTools');
 const landingErr=document.getElementById('landingErr'), viewerErr=document.getElementById('viewerErr'), bigUpload=document.getElementById('bigUpload'), bigPickCenter=document.getElementById('bigPickCenter');
@@ -419,7 +421,7 @@ async function playMoan(p, r){
     await a.play();
     const stopAfter = Math.max(800, 2000 / (a.playbackRate||1));
     setTimeout(()=>{ try{a.pause();}catch{} a.remove(); }, stopAfter);
-  }catch(e){ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }
+  }catch(e){ try{ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }catch{} }
 }
 sizeRange.addEventListener('input',e=> base=parseInt(e.target.value,10));
 soundBtn.addEventListener('click',()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn) playMoan(0.5, base); });
@@ -437,14 +439,14 @@ document.getElementById('landing').addEventListener('drop',e=>{ e.preventDefault
 let down=false, curP=0.5, holdT=null, hold0=0, last=null;
 function posFor(cx,cy){ const r=docStack.getBoundingClientRect(); return {x:cx-r.left, y:cy-r.top, ok: cx>=r.left && cx<=r.right && cy>=r.top && cy<=r.bottom}; }
 function punch(cx,cy,p, rOverride){
-  if(!hasDoc){ hintText.textContent='Upload a document first - then tear'; hint.classList.remove('hide'); return; }
+  if(!hasDoc){ try{ hintText.textContent='Upload a document first - then tear'; hint.classList.remove('hide'); }catch{} return; }
   const pt=posFor(cx,cy); if(!pt.ok) return;
   const r=rOverride||Math.max(12, base*(0.55+p*0.9));
   const seed=Math.floor(Math.random()*1e9);
   holes.push({x:pt.x,y:pt.y,r,p,seed}); holeCountEl.textContent=holes.length+' hole'+(holes.length!==1?'s':'');
   drawTornHole(pt.x,pt.y,r,p,seed); playMoan(p, r);
   const d=document.createElement('div'); d.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${r*2}px;height:${r*2}px;margin-left:${-r}px;margin-top:${-r}px;border-radius:50%;border:1.4px solid #e53935;box-shadow:0 0 12px rgba(229,57,53,.6);pointer-events:none;z-index:80`; document.body.appendChild(d); d.animate([{transform:'scale(.55)',opacity:1},{transform:'scale(1.25)',opacity:0}],{duration:360,easing:'ease-out'}).onfinish=()=>d.remove();
-  hint.classList.add('hide');
+  try{hint.classList.add('hide');}catch{}
 }
 hit.addEventListener('pointerdown',e=>{
   e.preventDefault(); try{ hit.setPointerCapture(e.pointerId);}catch{}
@@ -480,7 +482,7 @@ async function handleFile(file){
     else if(file.type.startsWith('image/')) await renderImage(file);
     else await renderText(file);
     hasDoc=true; holes=[]; holeCountEl.textContent='0 holes'; pageInfoEl.textContent=' - all pages • scroll • tear';
-    hintText.textContent='All pages loaded - scroll to read, press harder to tear'; hint.classList.remove('hide'); setTimeout(()=>hint.classList.add('hide'),2400);
+    try{ hintText.textContent='All pages loaded - scroll to read, press harder to tear'; hint.classList.remove('hide'); setTimeout(()=>{try{hint.classList.add('hide');}catch{}},2400);}catch{}
     requestAnimationFrame(()=>{ resizeCanvas(); viewer.scrollTop=0; }); setTimeout(resizeCanvas,120); setTimeout(resizeCanvas,600);
   }catch(e){ console.error(e); showErr('Failed to open: '+(e.message||String(e)), 'viewer'); pageInfoEl.textContent=' - failed'; }
 }
