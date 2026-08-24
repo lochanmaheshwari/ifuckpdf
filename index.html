@@ -143,7 +143,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
   #viewerBar{height:auto; min-height:44px; flex-wrap:wrap; padding:6px 8px; gap:6px}
   #viewerBar .leftSmall{font-size:11px}
   .viewerBtn{padding:5px 8px; font-size:11px}
-  .range{width:72px}
+  .range{width:92px; flex:1; min-width:72px} #sizeMinus,#sizePlus{display:inline-flex !important; align-items:center; justify-content:center}
   .count{font-size:11px; min-width:50px}
 }
 @media(max-width:380px){
@@ -251,7 +251,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
     <div class="leftSmall">📄 <span id="fileName">No file</span> <span style="color:#888;font-weight:400" id="pageInfo"></span></div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#666">hole size</span>
-      <input id="sizeRange" class="range" type="range" min="18" max="220" value="78">
+      <button class="viewerBtn" id="sizeMinus" title="Smaller" style="padding:6px 9px;min-width:32px">−</button>
+      <input id="sizeRange" class="range" type="range" min="18" max="220" value="36">
+      <button class="viewerBtn" id="sizePlus" title="Bigger" style="padding:6px 9px;min-width:32px">+</button>
       <button class="viewerBtn" id="resetBtn">Reset</button>
       <span class="count" id="holeCount">0 holes</span>
       <button class="viewerBtn" id="soundBtn" style="background:#111;color:#fff;border-color:#111">🔊 Sound on</button>
@@ -467,6 +469,8 @@ async function playMoan(p, r){
   }catch(e){ try{ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }catch{} }
 }
 sizeRange.addEventListener('input',e=> base=parseInt(e.target.value,10));
+document.getElementById('sizeMinus').addEventListener('click',()=>{ base=Math.max(18, base-10); sizeRange.value=base; });
+document.getElementById('sizePlus').addEventListener('click',()=>{ base=Math.min(220, base+10); sizeRange.value=base; });
 soundBtn.addEventListener('click', async ()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn){ await ensureAudio(); unlockAudioEls(); playMoan(0.5, base); } });
 resetBtn.addEventListener('click',()=>{ holes=[]; holeCountEl.textContent='0 holes'; hctx.clearRect(0,0,holeCanvas.width,holeCanvas.height); });
 document.getElementById('pickBtn').addEventListener('click',()=> fileInput.click());
