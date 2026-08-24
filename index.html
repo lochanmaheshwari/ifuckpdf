@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>i pdf - every hole you need</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;overflow:hidden}
+/* header exactly like screenshot but with fuck logo */
+.siteHeader{
+  position:fixed;top:0;left:0;right:0;height:64px;background:#fff;border-bottom:1px solid #ececef;
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 14px;z-index:90;gap:12px;
+}
+.brand{display:flex;align-items:center;gap:14px}
+.logoWrap{display:flex;align-items:center;gap:8px;font-weight:900;font-size:26px;letter-spacing:-0.04em;color:#111;line-height:1}
+.logoImg{width:32px;height:32px;border-radius:7px;object-fit:cover;border:1px solid #e8e8ef;background:#fff;display:block}
+.logoWrap b{color:#111}
+.logoWrap em{color:#e53935;font-style:normal;font-weight:900}
+.nav{display:flex;align-items:center;gap:22px;font-size:13px;font-weight:700;letter-spacing:0.02em;color:#2d2d2d}
+.nav span{cursor:pointer;white-space:nowrap}
+.nav span:hover{color:#e53935}
+.nav .arrow{font-size:10px;margin-left:4px;opacity:.6}
+.headerRight{display:flex;align-items:center;gap:12px}
+.login{font-size:14px;font-weight:600;color:#2d2d2d;cursor:pointer;user-select:none}
+.login:hover{color:#e53935}
+.signup{background:#d83a3a;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer}
+.signup:hover{background:#c62828}
+.dots{width:28px;height:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;cursor:pointer}
+.dots i{width:4px;height:4px;background:#111;border-radius:50%;display:block}
+/* landing */
+#landing{
+  position:fixed;inset:64px 0 0 0;overflow:auto;background:#f6f7fb;z-index:10;
+  background:
+    radial-gradient(ellipse 520px 520px at 95% 8%, rgba(255,230,230,.75) 0%, transparent 60%),
+    radial-gradient(ellipse 480px 480px at 4% 88%, rgba(255,234,234,.55) 0%, transparent 60%),
+    linear-gradient(180deg, #fcfcfe 0%, #f6f7fb 100%);
+}
+#landing::-webkit-scrollbar{width:10px}
+#landing::-webkit-scrollbar-thumb{background:#ddd;border-radius:999px}
+.landingInner{max-width:1240px;margin:0 auto;padding:28px 22px 60px;text-align:center;position:relative}
+.hero h1{font-size:42px;font-weight:800;letter-spacing:-0.03em;color:#1d1d2f;line-height:1.05}
+.hero h1 em{color:#e53935;font-style:normal}
+.hero p{max-width:820px;margin:14px auto 0;font-size:16px;line-height:1.6;color:#5a5a72}
+.hero p b{color:#1a1a2e}
+/* BIG central upload - actually works */
+.bigUpload{
+  margin:22px auto 18px;background:#fff;border:1.5px dashed #e8a0a0;border-radius:16px;
+  padding:22px 18px;max-width:760px;box-shadow:0 8px 30px rgba(0,0,0,.06);
+  display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:.15s;
+}
+.bigUpload:hover{border-color:#e53935;background:#fff8f8;transform:translateY(-1px)}
+.bigUpload .iconBox{width:56px;height:56px;border-radius:14px;background:#111;color:#fff;display:grid;place-items:center;font-size:22px}
+.bigUpload h3{font-size:18px;font-weight:800;color:#111}
+.bigUpload p{font-size:13px;color:#777;margin:0}
+.bigUpload .cta{margin-top:6px;background:#e53935;color:#fff;border:none;padding:12px 22px;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 18px rgba(229,57,53,.3)}
+.bigUpload .cta:hover{background:#c62828}
+.funnyBanner{margin:10px auto 0;background:#fff;border:1px dashed #e0b4b4;color:#b94a3a;padding:10px 14px;border-radius:10px;font-size:12px;max-width:820px}
+
+/* pills */
+.pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px auto 22px}
+.pill{border:1.5px solid #e6e6eb;background:#fff;color:#2b2b40;padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.pill.active{background:#0f0f1a;color:#fff;border-color:#0f0f1a}
+.pill:hover{border-color:#111}
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:left}
+.card{
+  background:#fff;border:1px solid #e8e8ef;border-radius:16px;padding:18px 16px 16px;min-height:204px;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);cursor:pointer;transition:.15s;position:relative;overflow:hidden;
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.08);border-color:#ddd}
+.card .icon{width:42px;height:42px;border-radius:9px;display:grid;place-items:center;font-size:16px;font-weight:800;margin-bottom:12px}
+.icon.merge{background:#e97a52;color:#fff}
+.icon.split{background:#e97a52;color:#fff}
+.icon.compress{background:#9ac06a;color:#fff}
+.icon.hole{background:#111;color:#fff}
+.card h3{font-size:17px;font-weight:700;color:#1a1a2e;margin-bottom:6px}
+.card p{font-size:13px;line-height:1.55;color:#6b6b82}
+.card .tag{position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:#0f0f1a;color:#fff;padding:4px 6px;border-radius:999px}
+.subtle{margin-top:18px;font-size:12px;color:#888}
+/* viewer - same torn engine */
+#void{position:fixed;inset:0;background:#040404;z-index:5;display:none}
+#viewerWrap{position:fixed;inset:64px 0 0 0;z-index:20;display:none;flex-direction:column;background:transparent}
+#viewerBar{height:44px;background:#fff;border-bottom:1px solid #ececef;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:8px}
+#viewerBar .leftSmall{font-size:12px;font-weight:600;color:#333;display:flex;align-items:center;gap:8px}
+#viewer{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:transparent;padding:18px 0 80px}
+#viewer::-webkit-scrollbar{width:10px}
+#viewer::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+#docStack{position:relative;width:min(860px,96vw);margin:0 auto;display:block}
+.page{position:relative;width:100%;background:#fff;box-shadow:0 6px 28px rgba(0,0,0,.62),0 1px 0 rgba(0,0,0,.08);border-radius:3px;margin:0 auto 14px;overflow:hidden}
+.page img,.page canvas{width:100%;height:auto;display:block}
+.page embed,.page iframe{width:100%;height:min(92vh,1180px);display:block;border:none;background:#fff}
+.page .docHtml{padding:42px 46px;font-family:Georgia,serif;font-size:14.5px;line-height:1.75;color:#111}
+.page .textView{padding:32px 28px;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12.5px;line-height:1.65}
+.pageNum{position:absolute;top:8px;right:10px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:4px 7px;border-radius:999px;pointer-events:none}
+#holeCanvas{position:absolute;left:0;top:0;pointer-events:none;z-index:5;display:block}
+#hit{position:absolute;left:0;top:0;z-index:6;cursor:crosshair;touch-action:pan-y}
+.viewerBtn{border:1px solid #ddd;background:#fff;color:#111;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.viewerBtn:hover{background:#111;color:#fff}
+.viewerBtn.primary{background:#e53935;color:#fff;border-color:#e53935}
+.count{font-size:12px;font-weight:700;min-width:64px}
+.range{accent-color:#e53935;width:96px}
+#hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:90;background:#111;color:#fff;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 14px;border-radius:999px;display:flex;align-items:center;gap:8px;transition:.25s}
+#hint.hide{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px)}
+#hint .dot{width:7px;height:7px;background:#e53935;border-radius:50%;box-shadow:0 0 8px #e53935}
+#cursor{position:fixed;pointer-events:none;z-index:80;border:1.8px dashed rgba(229,57,53,.95);border-radius:50%;transform:translate(-50%,-50%);display:none}
+.err{display:none;margin:10px auto 0;background:#fff2f2;border:1px solid #ffcaca;color:#b00020;font-size:12px;padding:10px;border-radius:8px;text-align:left;white-space:pre-wrap;max-width:860px}
+/* toast for login etc */
+#toast{position:fixed;top:78px;left:50%;transform:translateX(-50%) translateY(-10px);z-index:120;background:#111;color:#fff;padding:14px 18px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);display:none;max-width:92vw;text-align:center;line-height:1.5}
+#toast.show{display:block;animation:pop .22s ease}
+@keyframes pop{from{transform:translateX(-50%) translateY(-6px) scale(.98);opacity:0} to{transform:translateX(-50%) translateY(0) scale(1);opacity:1}}
+#toast b{color:#ff8a80}
+#toast .sub{font-weight:400;color:#bbb;font-size:12px;margin-top:4px}
+@media(max-width:980px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .nav{gap:14px;font-size:12px}
+  .hero h1{font-size:34px}
+}
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .nav{display:none}
+  .hero h1{font-size:28px}
+  .siteHeader{height:56px}
+  #landing{inset:56px 0 0 0}
+  #viewerWrap{inset:56px 0 0 0}
+  #docStack{width:98vw}
+}
+</style>
+</head>
+<body>
+<header class="siteHeader">
+  <div class="brand">
+    <div class="logoWrap">
+      <span style="display:flex;align-items:center;gap:6px"><b>i</b> <img class="logoImg" src="fuck-logo.avif" alt="logo" style="width:34px;height:34px;border-radius:7px;object-fit:cover;border:1px solid #e8e8ef" onerror="this.style.display='none'"> <b>pdf</b></span>
+    </div>
+    <nav class="nav">
+      <span id="navMerge">MERGE PDF</span>
+      <span id="navSplit">SPLIT PDF</span>
+      <span id="navCompress">COMPRESS PDF</span>
+      <span id="navConvert">CONVERT PDF <span class="arrow">▼</span></span>
+      <span id="navAll">ALL PDF TOOLS <span class="arrow">▼</span></span>
+    </nav>
+  </div>
+  <div class="headerRight">
+    <span class="login" id="backToTools" style="display:none">← All tools</span>
+    <span class="login" id="loginBtn">Login</span>
+    <button class="signup" id="signupBtn">Sign up</button>
+    <div class="dots" id="dotsBtn"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</header>
+
+<div id="landing">
+  <div class="landingInner">
+    <div class="hero">
+      <h1>Every tool you need to <em>fuck</em> with PDFs<br>in one place</h1>
+      <p>Every tool you need to use PDFs, at your fingertips. All are <b>100% FREE</b> and suspiciously easy to use! Merge, split, compress, <b>punch holes to the void</b>, rotate, unlock and watermark PDFs - because why the fuck not.</p>
+    </div>
+
+    <!-- BIG central upload that ACTUALLY uploads -->
+    <div class="bigUpload" id="bigUpload">
+      <div class="iconBox">⇧</div>
+      <h3>Click to fuck a PDF - upload anything</h3>
+      <p>PDF, Word (.doc/.docx), photo - opens like a real page. Scroll to read all pages, then tear holes straight to darkness.</p>
+      <button class="cta" id="bigPickCenter">＋ Select Document</button>
+      <p style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#999">Drop file here • anywhere on page • Paste (Ctrl+V)</p>
+      <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg,.webp,.gif,.bmp,application/pdf" hidden>
+    </div>
+
+    <div class="funnyBanner">⚠️ Behind every tear is pure darkness + <i>that</i> moan.mp3 - press harder for bigger regrets. 100% free, no login bullshit.</div>
+
+    <div class="pills">
+      <span class="pill active">All</span><span class="pill">Workflows</span><span class="pill">Organize PDF</span><span class="pill">Optimize PDF</span><span class="pill">Convert PDF</span><span class="pill">Edit PDF</span><span class="pill">PDF Security</span><span class="pill">PDF Intelligence</span>
+    </div>
+    <div class="grid">
+      <div class="card" data-action="merge">
+        <span class="tag">most abused</span>
+        <div class="icon merge">⇄</div>
+        <h3>Merge PDF</h3>
+        <p>Combine PDFs in the order you want - like combining your excuses into one flawless lie. The easiest PDF merger and alibi generator.</p>
+      </div>
+      <div class="card" data-action="split">
+        <div class="icon split">⇅</div>
+        <h3>Split PDF</h3>
+        <p>Separate one page or a whole set. For when you love page 3 but hate commitment. Divorce your PDF.</p>
+      </div>
+      <div class="card" data-action="compress">
+        <div class="icon compress">⤢</div>
+        <h3>Compress PDF</h3>
+        <p>Reduce file size while keeping quality. Make your 89MB scanned homework look like it went on Ozempic.</p>
+      </div>
+      <div class="card" data-action="hole">
+        <div class="icon hole">◯</div>
+        <h3>Punch PDF™</h3>
+        <p>Upload anything - it appears like a real page. <b>Click to tear a hole straight to the void.</b> Harder press = nastier tear + moan.</p>
+      </div>
+      <div class="card" data-action="hole">
+        <div class="icon hole" style="background:#e53935">✦</div>
+        <h3>Fuck PDF Properly</h3>
+        <p>Open the document you’ve been avoiding. Read it fully (all pages scroll). Then destroy it productively by punching reality holes.</p>
+      </div>
+      <div class="card" data-action="hole">
+        <div class="icon merge">♡</div>
+        <h3>Unhinged PDF</h3>
+        <p>Looks 1:1 like the real file. Scroll like a normal viewer, but every click leaves torn fibers, curled paper, and abyss underneath.</p>
+      </div>
+      <div class="card" data-action="hole">
+        <div class="icon compress">♪</div>
+        <h3>ASMR PDF</h3>
+        <p>Sound on. Each tear plays <i>that</i> moan.mp3. Tap once to unlock audio - then forever regret.</p>
+      </div>
+      <div class="card" data-action="hole">
+        <div class="icon split">↻</div>
+        <h3>Existential PDF</h3>
+        <p>Why read the document when you can reveal the abyss behind it? Paper thickness, shadows, and void included. No sign-up, no login.</p>
+      </div>
+    </div>
+    <div class="subtle">Tip: every card actually works - click any to upload. Login does NOT - see why below.</div>
+    <div id="landingErr" class="err"></div>
+  </div>
+</div>
+
+<div id="void"></div>
+<div id="viewerWrap">
+  <div id="viewerBar">
+    <div class="leftSmall">📄 <span id="fileName">No file</span> <span style="color:#888;font-weight:400" id="pageInfo"></span></div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#666">hole size</span>
+      <input id="sizeRange" class="range" type="range" min="18" max="220" value="78">
+      <button class="viewerBtn" id="resetBtn">Reset</button>
+      <span class="count" id="holeCount">0 holes</span>
+      <button class="viewerBtn" id="soundBtn" style="background:#111;color:#fff;border-color:#111">🔊 Sound on</button>
+      <button class="viewerBtn primary" id="pickBtn">Select Document</button>
+    </div>
+  </div>
+  <div id="viewer">
+    <div id="docStack">
+      <canvas id="holeCanvas"></canvas>
+      <div id="hit"></div>
+    </div>
+    <div id="viewerErr" class="err"></div>
+  </div>
+</div>
+
+<div id="hint"><span class="dot"></span><span id="hintText">Click any card or the big upload - PDF opens scrollably, then tear</span></div>
+<div id="cursor"></div>
+<div id="toast"></div>
+<audio id="moan" src="moan.mp3" preload="auto"></audio>
+<audio id="moan2" src="moan2.mp3" preload="auto"></audio>
+<audio id="breath" src="breath.mp3" preload="auto"></audio>
+<audio id="peak1" src="peak1.m4a" preload="auto"></audio>
+<audio id="peak2" src="peak2.wav" preload="auto"></audio>
+<audio id="peak3" src="peak3.mp3" preload="auto"></audio>
+<audio id="peak4" src="peak4.wav" preload="auto"></audio>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const fileInput=document.getElementById('fileInput'), landing=document.getElementById('landing'), voidEl=document.getElementById('void'), viewerWrap=document.getElementById('viewerWrap');
+const docStack=document.getElementById('docStack'), viewer=document.getElementById('viewer'), holeCanvas=document.getElementById('holeCanvas'), hit=document.getElementById('hit'), hctx=holeCanvas.getContext('2d');
+const sizeRange=document.getElementById('sizeRange'), resetBtn=document.getElementById('resetBtn'), soundBtn=document.getElementById('soundBtn'), holeCountEl=document.getElementById('holeCount');
+const hint=document.getElementById('hint'), hintText=document.getElementById('hintText'), moan=document.getElementById('moan'), moan2=document.getElementById('moan2'), breath=document.getElementById('breath'), cursorEl=document.getElementById('cursor');
+const sounds=['moan.mp3','moan2.mp3','breath.mp3','peak1.m4a','peak2.wav','peak3.mp3','peak4.wav']; const audioEls={'moan.mp3':moan,'moan2.mp3':moan2,'breath.mp3':breath,'peak1.m4a':document.getElementById('peak1'),'peak2.wav':document.getElementById('peak2'),'peak3.mp3':document.getElementById('peak3'),'peak4.wav':document.getElementById('peak4')}; let prevPick=null;
+const fileNameEl=document.getElementById('fileName'), pageInfoEl=document.getElementById('pageInfo'), backToTools=document.getElementById('backToTools');
+const landingErr=document.getElementById('landingErr'), viewerErr=document.getElementById('viewerErr'), bigUpload=document.getElementById('bigUpload'), bigPickCenter=document.getElementById('bigPickCenter');
+let holes=[], base=parseInt(sizeRange.value,10), soundOn=true, hasDoc=false, audioCtx=null, unlocked=false;
+
+function showViewer(){ landing.style.display='none'; voidEl.style.display='block'; viewerWrap.style.display='flex'; backToTools.style.display='inline'; setTimeout(resizeCanvas,80); }
+function showLanding(){ landing.style.display='block'; voidEl.style.display='none'; viewerWrap.style.display='none'; backToTools.style.display='none'; }
+backToTools.addEventListener('click', showLanding);
+
+// --- all things actually work ---
+function toast(msg, sub){
+  const t=document.getElementById('toast');
+  t.innerHTML='<div>'+msg+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'');
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm=setTimeout(()=> t.classList.remove('show'), 3200);
+}
+document.getElementById('loginBtn').addEventListener('click', ()=> toast('bro why tf do you need to <b>login</b> to fuck a PDF?', 'Just go for it - pick a file, tear holes, hear the moan. No account, no password, no commitment issues.'));
+document.getElementById('signupBtn').addEventListener('click', ()=> toast('sign up? nah bro - <b>just fuck the PDF directly</b>', 'This site is 100% free. Upload → scroll → tear. No email, no spam, no ex.'));
+document.getElementById('dotsBtn').addEventListener('click', ()=> toast('Dots? That’s just ✨ vibes ✨', 'All tools are already here. Click any card.'));
+document.getElementById('navConvert').addEventListener('click', ()=> toast('Convert PDF → <b>Converted to emotional damage</b>', 'Upload anything - we’ll open it like an image. PDF, Word, photo.'));
+document.getElementById('navAll').addEventListener('click', ()=> { toast('All tools → you’re looking at them bro'); document.getElementById('landing').scrollTo({top:0, behavior:'smooth'}); });
+document.querySelectorAll('.pill').forEach(p=> p.addEventListener('click', ()=>{
+  document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active')); p.classList.add('active');
+  toast(p.textContent+' - <b>filtered (not really)</b>', 'It’s all the same 8 cards, just with different lies. Click one to fuck a PDF.');
+}));
+// cards + navs actually upload
+document.querySelectorAll('.card, #navMerge, #navSplit, #navCompress').forEach(el=> el.addEventListener('click', ()=> fileInput.click()));
+bigUpload.addEventListener('click', ()=> fileInput.click());
+bigPickCenter.addEventListener('click', (e)=>{ e.stopPropagation(); fileInput.click(); });
+bigUpload.addEventListener('dragover', e=>{ e.preventDefault(); bigUpload.style.borderColor='#e53935'; bigUpload.style.background='#fff8f8'; });
+bigUpload.addEventListener('dragleave', ()=>{ bigUpload.style.borderColor='#e8a0a0'; bigUpload.style.background='#fff'; });
+bigUpload.addEventListener('drop', e=>{ e.preventDefault(); bigUpload.style.borderColor='#e8a0a0'; bigUpload.style.background='#fff'; const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+
+// canvas sizing
+function resizeCanvas(){
+  const w=docStack.offsetWidth, h=docStack.scrollHeight;
+  if(w<10||h<10) return;
+  const dpr=Math.min(devicePixelRatio||1,2);
+  holeCanvas.width=Math.round(w*dpr); holeCanvas.height=Math.round(h*dpr);
+  holeCanvas.style.width=w+'px'; holeCanvas.style.height=h+'px';
+  hit.style.width=w+'px'; hit.style.height=h+'px';
+  hctx.setTransform(dpr,0,0,dpr,0,0);
+  redraw();
+}
+function redraw(){
+  const w=docStack.offsetWidth, h=docStack.scrollHeight;
+  hctx.clearRect(0,0,w,h);
+  holes.forEach(o=> drawTornHole(o.x,o.y,o.r,o.p,o.seed));
+}
+function drawTornHole(cx,cy,r,pressure,seed){
+  pressure=Math.max(0,Math.min(1,pressure));
+  const rng=mulberry32(seed);
+  const points=48, pts=[];
+  for(let i=0;i<points;i++){
+    const ang=(i/points)*Math.PI*2;
+    const n1=Math.sin(ang*3+seed*0.01)*0.06, n2=Math.cos(ang*7)*0.04;
+    const rnd=(rng()-0.5)*(0.18+pressure*0.32);
+    const rad=r*(1+n1+n2+rnd);
+    pts.push({x:cx+Math.cos(ang)*rad, y:cy+Math.sin(ang)*rad, ang});
+  }
+  hctx.save();
+  hctx.shadowColor='rgba(0,0,0,.9)'; hctx.shadowBlur=r*0.55; hctx.fillStyle='#040404';
+  hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
+  hctx.shadowBlur=0;
+  hctx.fillStyle='#050507'; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
+  const g=hctx.createRadialGradient(cx+r*0.12,cy+r*0.12,r*0.18,cx,cy,r*1.05);
+  g.addColorStop(0,'rgba(255,255,255,.07)'); g.addColorStop(0.32,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.78)');
+  hctx.fillStyle=g; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
+  hctx.strokeStyle='rgba(245,235,220,.95)'; hctx.lineWidth=Math.max(1.6,r*0.025); hctx.lineJoin='round'; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
+  hctx.strokeStyle='rgba(0,0,0,.55)'; hctx.lineWidth=Math.max(1,r*0.015); hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
+  for(let i=0;i<pts.length;i+=2){ if(rng()<0.55){ const p=pts[i]; const len=r*(0.06+rng()*0.11); const ang=p.ang+(rng()-0.5)*0.35; const ox=p.x+Math.cos(ang)*len, oy=p.y+Math.sin(ang)*len; hctx.fillStyle=rng()>0.3?'rgba(250,244,232,.98)':'rgba(235,225,205,.95)'; hctx.beginPath(); hctx.moveTo(p.x,p.y); hctx.lineTo(ox+(rng()-0.5)*3, oy+(rng()-0.5)*3); hctx.lineTo(p.x+Math.cos(ang+0.35)*len*0.55, p.y+Math.sin(ang+0.35)*len*0.55); hctx.closePath(); hctx.fill(); hctx.fillStyle='rgba(0,0,0,.22)'; hctx.beginPath(); hctx.ellipse((p.x+ox)/2,(p.y+oy)/2,len*0.22,len*0.09,ang,0,Math.PI*2); hctx.fill(); } }
+  for(let i=0;i<6;i++){ const a=rng()*Math.PI*2, rr=r*(0.92+rng()*0.18); hctx.fillStyle='rgba(205,195,175,.45)'; hctx.beginPath(); hctx.arc(cx+Math.cos(a)*rr, cy+Math.sin(a)*rr, rng()*1.4+0.6, 0, Math.PI*2); hctx.fill(); }
+  hctx.restore();
+}
+function mulberry32(a){ return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t ^ t>>>15, t|1); t^=t+Math.imul(t ^ t>>>7, t|61); return ((t ^ t>>>14)>>>0)/4294967296; } }
+new ResizeObserver(resizeCanvas).observe(docStack);
+window.addEventListener('resize', resizeCanvas);
+function ensureAudio(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); unlocked=true; }
+document.addEventListener('pointerdown',()=>{ if(!unlocked) ensureAudio(); }, {once:true});
+moan.addEventListener('error',()=>{ soundBtn.textContent='⚠️ moan.mp3 missing'; });
+async function playMoan(p){
+  if(!soundOn) return; ensureAudio(); p=Math.max(0,Math.min(1,p));
+  let pick; do{ pick = sounds[Math.floor(Math.random()*sounds.length)]; }while(sounds.length>1 && pick===prevPick); prevPick=pick;
+  try{
+    const resp=await fetch(pick); if(!resp.ok) throw new Error(resp.status);
+    const buf=await resp.arrayBuffer(); const dec=await audioCtx.decodeAudioData(buf.slice(0));
+    // --- peak 3s extraction ---
+    let srcBuf=dec;
+    if(dec.duration>3.02){
+      const sr=dec.sampleRate;
+      const ch=dec.getChannelData(0);
+      const win=Math.floor(3*sr);
+      const step=Math.floor(0.05*sr);
+      let best=-1, bestPos=0;
+      for(let pos=0; pos+win < ch.length; pos+=step){
+        let sum=0;
+        for(let i=0;i<win;i+=64){ const v=ch[pos+i]; sum+=v*v; }
+        const rms=Math.sqrt(sum/(win/64));
+        if(rms>best){ best=rms; bestPos=pos; }
+      }
+      // create 3s peak buffer
+      const peakBuf=audioCtx.createBuffer(dec.numberOfChannels, win, sr);
+      for(let c=0;c<dec.numberOfChannels;c++){
+        const src=dec.getChannelData(c);
+        const dst=peakBuf.getChannelData(c);
+        for(let i=0;i<win;i++) dst[i]=src[bestPos+i]||0;
+      }
+      srcBuf=peakBuf;
+    }
+    const src=audioCtx.createBufferSource(); src.buffer=srcBuf; src.playbackRate.value=0.86+p*0.42+(Math.random()-0.5)*0.05;
+    const g=audioCtx.createGain(); g.gain.value=0.78+p*0.22; src.connect(g).connect(audioCtx.destination); src.start();
+    // hard 3s cap even if buffer longer
+    const playLen = Math.min(srcBuf.duration / src.playbackRate.value, 3.05);
+    setTimeout(()=>{ try{src.stop();}catch{} }, playLen*1000+50); return;
+  }catch(e){}
+  try{
+    const el=audioEls[pick]||moan; const a=el.cloneNode(true); a.volume=0.9; a.playbackRate=0.9+p*0.4;
+    // fallback 4s limit
+    a.addEventListener('loadedmetadata', ()=>{ if(a.duration>3.1){ try{ a.currentTime=Math.max(0,(a.duration-3)/2); }catch{} } });
+    await a.play();
+    const stopAfter = Math.max(800, 3000 / (a.playbackRate||1));
+    setTimeout(()=>{ try{a.pause();}catch{} a.remove(); }, stopAfter);
+  }catch(e){ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }
+}
+sizeRange.addEventListener('input',e=> base=parseInt(e.target.value,10));
+soundBtn.addEventListener('click',()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn) playMoan(0.5); });
+resetBtn.addEventListener('click',()=>{ holes=[]; holeCountEl.textContent='0 holes'; hctx.clearRect(0,0,holeCanvas.width,holeCanvas.height); });
+document.getElementById('pickBtn').addEventListener('click',()=> fileInput.click());
+fileInput.addEventListener('change',e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
+viewer.addEventListener('dragover',e=> e.preventDefault());
+viewer.addEventListener('drop',e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+window.addEventListener('paste',e=>{ const it=[...(e.clipboardData.items||[])].find(i=>i.type.startsWith('image/')); if(it) handleFile(it.getAsFile()); });
+// also allow dropping anywhere on landing
+document.getElementById('landing').addEventListener('dragover',e=> e.preventDefault());
+document.getElementById('landing').addEventListener('drop',e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+
+// punch
+let down=false, curP=0.5, holdT=null, hold0=0, last=null;
+function posFor(cx,cy){ const r=docStack.getBoundingClientRect(); return {x:cx-r.left, y:cy-r.top, ok: cx>=r.left && cx<=r.right && cy>=r.top && cy<=r.bottom}; }
+function punch(cx,cy,p, rOverride){
+  if(!hasDoc){ hintText.textContent='Upload a document first - then tear'; hint.classList.remove('hide'); return; }
+  const pt=posFor(cx,cy); if(!pt.ok) return;
+  const r=rOverride||Math.max(12, base*(0.55+p*0.9));
+  const seed=Math.floor(Math.random()*1e9);
+  holes.push({x:pt.x,y:pt.y,r,p,seed}); holeCountEl.textContent=holes.length+' hole'+(holes.length!==1?'s':'');
+  drawTornHole(pt.x,pt.y,r,p,seed); playMoan(p);
+  const d=document.createElement('div'); d.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${r*2}px;height:${r*2}px;margin-left:${-r}px;margin-top:${-r}px;border-radius:50%;border:1.4px solid #e53935;box-shadow:0 0 12px rgba(229,57,53,.6);pointer-events:none;z-index:80`; document.body.appendChild(d); d.animate([{transform:'scale(.55)',opacity:1},{transform:'scale(1.25)',opacity:0}],{duration:360,easing:'ease-out'}).onfinish=()=>d.remove();
+  hint.classList.add('hide');
+}
+hit.addEventListener('pointerdown',e=>{
+  e.preventDefault(); try{ hit.setPointerCapture(e.pointerId);}catch{}
+  down=true; curP=e.pressure>0?e.pressure:0.5; hold0=Date.now(); last={x:e.clientX,y:e.clientY};
+  punch(e.clientX,e.clientY,curP);
+  clearInterval(holdT);
+  holdT=setInterval(()=>{ if(!down) return; const extra=Math.min(1,(Date.now()-hold0)/1050*0.7); const p=Math.min(1,curP+extra); if(holes.length){ const h=holes[holes.length-1]; const tr=base*(0.55+p*0.9); if(tr>h.r){ h.r=tr; h.p=p; redraw(); } } },42);
+});
+hit.addEventListener('pointermove',e=>{
+  cursorEl.style.display='block'; cursorEl.style.left=e.clientX+'px'; cursorEl.style.top=e.clientY+'px';
+  const p=e.pressure>0?e.pressure:0.5; const sz=Math.max(12,base*(0.55+p*0.9)); cursorEl.style.width=sz*2+'px'; cursorEl.style.height=sz*2+'px';
+  if(!down) return; curP=p;
+  if(last && Math.hypot(e.clientX-last.x,e.clientY-last.y) < sz*0.38) return;
+  last={x:e.clientX,y:e.clientY}; punch(e.clientX,e.clientY,curP);
+});
+hit.addEventListener('pointerup',()=>{ down=false; clearInterval(holdT); });
+hit.addEventListener('pointerleave',()=>{ cursorEl.style.display='none'; down=false; clearInterval(holdT); });
+
+// file handling - all pages scrollable
+function showErr(m, where){ const el=where==='landing'?landingErr:viewerErr; el.textContent=m; el.style.display='block'; }
+function clearErr(){ landingErr.style.display='none'; viewerErr.style.display='none'; }
+async function handleFile(file){
+  clearErr();
+  [...docStack.querySelectorAll('.page')].forEach(n=>n.remove());
+  const name=file.name||''; const ext=(name.split('.').pop()||'').toLowerCase();
+  showViewer(); fileNameEl.textContent=name||'Document'; pageInfoEl.textContent=' - opening…';
+  try{
+    if(file.type==='application/pdf' || ext==='pdf') await renderPdfAllPages(file);
+    else if(file.type.startsWith('image/') || ['png','jpg','jpeg','webp','gif','bmp','avif'].includes(ext)) await renderImage(file);
+    else if(ext==='docx') await renderDocx(file);
+    else if(ext==='doc'){ try{ await renderDocx(file);}catch{ await renderText(file); } }
+    else if(['txt','md','csv','json','html'].includes(ext)) await renderText(file);
+    else if(file.type.startsWith('image/')) await renderImage(file);
+    else await renderText(file);
+    hasDoc=true; holes=[]; holeCountEl.textContent='0 holes'; pageInfoEl.textContent=' - all pages • scroll • tear';
+    hintText.textContent='All pages loaded - scroll to read, press harder to tear'; hint.classList.remove('hide'); setTimeout(()=>hint.classList.add('hide'),2400);
+    requestAnimationFrame(()=>{ resizeCanvas(); viewer.scrollTop=0; }); setTimeout(resizeCanvas,120); setTimeout(resizeCanvas,600);
+  }catch(e){ console.error(e); showErr('Failed to open: '+(e.message||String(e)), 'viewer'); pageInfoEl.textContent=' - failed'; }
+}
+async function renderImage(file){
+  const url=URL.createObjectURL(file);
+  const d=document.createElement('div'); d.className='page';
+  const img=document.createElement('img'); img.src=url;
+  await new Promise((res,rej)=>{ img.onload=res; img.onerror=()=>rej(new Error('image load failed')); });
+  d.appendChild(img); docStack.appendChild(d);
+}
+async function renderDocx(file){
+  const buf=await file.arrayBuffer(); const r=await mammoth.convertToHtml({arrayBuffer:buf});
+  const d=document.createElement('div'); d.className='page'; d.innerHTML='<div class="docHtml">'+(r.value||'<p>(empty)</p>')+'</div>'; docStack.appendChild(d);
+}
+async function renderText(file){
+  const t=await file.text(); const d=document.createElement('div'); d.className='page';
+  const safe=t.slice(0,300000).replace(/[&<>]/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  d.innerHTML='<div class="textView">'+safe+'</div>'; docStack.appendChild(d);
+}
+async function renderPdfAllPages(file){
+  const url=URL.createObjectURL(file); const buf=await file.arrayBuffer(); let used=false;
+  try{
+    const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise;
+    for(let i=1;i<=pdf.numPages;i++){
+      const page=await pdf.getPage(i); const viewport=page.getViewport({scale:1.9});
+      const canvas=document.createElement('canvas'); const ctx=canvas.getContext('2d');
+      canvas.width=viewport.width; canvas.height=viewport.height;
+      await page.render({canvasContext:ctx,viewport}).promise;
+      const wrap=document.createElement('div'); wrap.className='page'; wrap.appendChild(canvas);
+      const badge=document.createElement('div'); badge.className='pageNum'; badge.textContent=i+' / '+pdf.numPages; wrap.appendChild(badge);
+      docStack.appendChild(wrap);
+    } used=true; pageInfoEl.textContent=' - '+pdf.numPages+' pages';
+  }catch(e){ console.warn('pdf.js fail',e); }
+  if(!used){
+    const wrap=document.createElement('div'); wrap.className='page';
+    const embed=document.createElement('embed'); embed.src=url; embed.type='application/pdf'; wrap.appendChild(embed);
+    const badge=document.createElement('div'); badge.className='pageNum'; badge.textContent='Native PDF'; wrap.appendChild(badge);
+    docStack.appendChild(wrap);
+  }
+}
+window.addEventListener('keydown',e=>{ if(e.key.toLowerCase()==='r') resetBtn.click(); if(e.key.toLowerCase()==='m'){ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; } });
+resizeCanvas(); setTimeout(resizeCanvas,300);
+</script>
+</body>
+</html>
