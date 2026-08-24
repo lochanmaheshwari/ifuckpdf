@@ -474,7 +474,7 @@ async function playMoan(p, r){
 sizeRange.addEventListener('input',e=> base=parseInt(e.target.value,10));
 document.getElementById('sizeMinus').addEventListener('click',()=>{ base=Math.max(18, base-10); sizeRange.value=base; });
 document.getElementById('sizePlus').addEventListener('click',()=>{ base=Math.min(220, base+10); sizeRange.value=base; });
-soundBtn.addEventListener('click', async ()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn){ await ensureAudio(); unlockAudioEls(); playMoan(0.5, base); } });
+soundBtn.addEventListener('click', async ()=>{ soundOn=!soundOn; soundBtn.textContent=soundOn?'🔊 Sound on':'🔇 Muted'; soundBtn.style.background=soundOn?'#111':'#fff'; soundBtn.style.color=soundOn?'#fff':'#111'; if(soundOn){ await ensureAudio(); unlockAudioEls(); } }); // sound only on doc tear, not on toggle
 resetBtn.addEventListener('click',()=>{ holes=[]; holeCountEl.textContent='0 holes'; hctx.clearRect(0,0,holeCanvas.width,holeCanvas.height); });
 document.getElementById('pickBtn').addEventListener('click',()=> fileInput.click());
 fileInput.addEventListener('change',e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=''; });
