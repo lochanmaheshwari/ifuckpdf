@@ -383,12 +383,12 @@ async function playMoan(p, r){
   try{
     const resp=await fetch(pick); if(!resp.ok) throw new Error(resp.status);
     const buf=await resp.arrayBuffer(); const dec=await audioCtx.decodeAudioData(buf.slice(0));
-    // --- peak 3s extraction ---
+    // --- peak 2s extraction ---
     let srcBuf=dec;
-    if(dec.duration>3.02){
+    if(dec.duration>2.02){
       const sr=dec.sampleRate;
       const ch=dec.getChannelData(0);
-      const win=Math.floor(3*sr);
+      const win=Math.floor(2*sr);
       const step=Math.floor(0.05*sr);
       let best=-1, bestPos=0;
       for(let pos=0; pos+win < ch.length; pos+=step){
@@ -397,7 +397,7 @@ async function playMoan(p, r){
         const rms=Math.sqrt(sum/(win/64));
         if(rms>best){ best=rms; bestPos=pos; }
       }
-      // create 3s peak buffer
+      // create 2s peak buffer
       const peakBuf=audioCtx.createBuffer(dec.numberOfChannels, win, sr);
       for(let c=0;c<dec.numberOfChannels;c++){
         const src=dec.getChannelData(c);
@@ -408,16 +408,16 @@ async function playMoan(p, r){
     }
     const src=audioCtx.createBufferSource(); src.buffer=srcBuf; src.playbackRate.value=0.82 + pitchFromHole + pitchFromPressure + (Math.random()-0.5)*0.04; // bigger hole = higher
     const g=audioCtx.createGain(); g.gain.value=0.78+p*0.22; src.connect(g).connect(audioCtx.destination); src.start();
-    // hard 3s cap even if buffer longer
-    const playLen = Math.min(srcBuf.duration / src.playbackRate.value, 3.05);
+    // hard 2s cap even if buffer longer
+    const playLen = Math.min(srcBuf.duration / src.playbackRate.value, 2.05);
     setTimeout(()=>{ try{src.stop();}catch{} }, playLen*1000+50); return;
   }catch(e){}
   try{
     const el=audioEls[pick]||moan; const a=el.cloneNode(true); a.volume=0.9; a.playbackRate=0.85 + pitchFromHole*0.5 + p*0.15; // bigger hole = higher in fallback too
     // fallback 4s limit
-    a.addEventListener('loadedmetadata', ()=>{ if(a.duration>3.1){ try{ a.currentTime=Math.max(0,(a.duration-3)/2); }catch{} } });
+    a.addEventListener('loadedmetadata', ()=>{ if(a.duration>2.1){ try{ a.currentTime=Math.max(0,(a.duration-2)/2); }catch{} } });
     await a.play();
-    const stopAfter = Math.max(800, 3000 / (a.playbackRate||1));
+    const stopAfter = Math.max(800, 2000 / (a.playbackRate||1));
     setTimeout(()=>{ try{a.pause();}catch{} a.remove(); }, stopAfter);
   }catch(e){ hintText.textContent='Tap once to enable sound'; hint.classList.remove('hide'); }
 }
