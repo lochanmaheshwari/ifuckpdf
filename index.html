@@ -259,6 +259,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f6f7fb;color:#1a1a2e;o
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const fileInput=document.getElementById('fileInput'), landing=document.getElementById('landing'), voidEl=document.getElementById('void'), viewerWrap=document.getElementById('viewerWrap');
 const docStack=document.getElementById('docStack'), viewer=document.getElementById('viewer'), holeCanvas=document.getElementById('holeCanvas'), hit=document.getElementById('hit'), hctx=holeCanvas.getContext('2d');
+let tornImg=null, tornPattern=null;
+(function(){
+  const img=new Image(); img.src='torn-paper.avif';
+  img.onload=()=>{ tornImg=img; try{ tornPattern=hctx.createPattern(img,'repeat'); }catch{} redraw(); };
+  img.onerror=()=>{ console.log('torn texture failed'); };
+})();
 const sizeRange=document.getElementById('sizeRange'), resetBtn=document.getElementById('resetBtn'), soundBtn=document.getElementById('soundBtn'), holeCountEl=document.getElementById('holeCount');
 const hint=document.getElementById('hint'), hintText=document.getElementById('hintText'), moan=document.getElementById('moan'), moan2=document.getElementById('moan2'), breath=document.getElementById('breath'), cursorEl=document.getElementById('cursor');
 const sounds=['moan.mp3','moan2.mp3','breath.mp3','peak1.m4a','peak2.wav','peak3.mp3','peak4.wav']; const audioEls={'moan.mp3':moan,'moan2.mp3':moan2,'breath.mp3':breath,'peak1.m4a':document.getElementById('peak1'),'peak2.wav':document.getElementById('peak2'),'peak3.mp3':document.getElementById('peak3'),'peak4.wav':document.getElementById('peak4')}; let prevPick=null;
@@ -323,15 +329,39 @@ function drawTornHole(cx,cy,r,pressure,seed){
     pts.push({x:cx+Math.cos(ang)*rad, y:cy+Math.sin(ang)*rad, ang});
   }
   hctx.save();
-  hctx.shadowColor='rgba(0,0,0,.9)'; hctx.shadowBlur=r*0.55; hctx.fillStyle='#040404';
+  // base torn shadow with paper texture depth
+  hctx.shadowColor='rgba(0,0,0,.88)'; hctx.shadowBlur=r*0.62; hctx.fillStyle='#070708';
   hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
   hctx.shadowBlur=0;
-  hctx.fillStyle='#050507'; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
-  const g=hctx.createRadialGradient(cx+r*0.12,cy+r*0.12,r*0.18,cx,cy,r*1.05);
-  g.addColorStop(0,'rgba(255,255,255,.07)'); g.addColorStop(0.32,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.78)');
+  // void interior - add torn paper texture pattern for fibers if loaded
+  hctx.fillStyle='#050507';
+  // clip to hole shape then draw texture
+  hctx.save();
+  hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.clip();
+  // dark void base
+  hctx.fillRect(cx-r*1.4, cy-r*1.4, r*2.8, r*2.8);
+  // overlay torn paper fibers texture at low opacity
+  if(tornPattern){
+    hctx.globalAlpha=0.22; hctx.fillStyle=tornPattern; hctx.fillRect(cx-r*1.4, cy-r*1.4, r*2.8, r*2.8);
+    hctx.globalAlpha=1;
+  } else if(tornImg){
+    hctx.globalAlpha=0.18; hctx.drawImage(tornImg, cx-r*1.4, cy-r*1.4, r*2.8, r*2.8);
+    hctx.globalAlpha=1;
+  }
+  hctx.restore();
+  // inner depth gradient
+  const g=hctx.createRadialGradient(cx+r*0.11,cy+r*0.11,r*0.16,cx,cy,r*1.12);
+  g.addColorStop(0,'rgba(255,255,255,.08)'); g.addColorStop(0.30,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,.82)');
   hctx.fillStyle=g; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.fill();
-  hctx.strokeStyle='rgba(245,235,220,.95)'; hctx.lineWidth=Math.max(1.6,r*0.025); hctx.lineJoin='round'; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
-  hctx.strokeStyle='rgba(0,0,0,.55)'; hctx.lineWidth=Math.max(1,r*0.015); hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
+  // torn edge - paper thickness with texture-tinted stroke
+  hctx.strokeStyle='rgba(242,232,216,.96)'; hctx.lineWidth=Math.max(2, r*0.032); hctx.lineJoin='round'; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
+  // inner shadow line for thickness
+  hctx.strokeStyle='rgba(0,0,0,.58)'; hctx.lineWidth=Math.max(1, r*0.016); hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke();
+  // subtle paper grain along edge using torn texture clipped to stroke
+  if(tornPattern){
+    hctx.save();
+    hctx.strokeStyle=tornPattern; hctx.lineWidth=Math.max(1.2, r*0.018); hctx.globalAlpha=0.35; hctx.beginPath(); hctx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) hctx.lineTo(pts[i].x,pts[i].y); hctx.closePath(); hctx.stroke(); hctx.restore();
+  }
   for(let i=0;i<pts.length;i+=2){ if(rng()<0.55){ const p=pts[i]; const len=r*(0.06+rng()*0.11); const ang=p.ang+(rng()-0.5)*0.35; const ox=p.x+Math.cos(ang)*len, oy=p.y+Math.sin(ang)*len; hctx.fillStyle=rng()>0.3?'rgba(250,244,232,.98)':'rgba(235,225,205,.95)'; hctx.beginPath(); hctx.moveTo(p.x,p.y); hctx.lineTo(ox+(rng()-0.5)*3, oy+(rng()-0.5)*3); hctx.lineTo(p.x+Math.cos(ang+0.35)*len*0.55, p.y+Math.sin(ang+0.35)*len*0.55); hctx.closePath(); hctx.fill(); hctx.fillStyle='rgba(0,0,0,.22)'; hctx.beginPath(); hctx.ellipse((p.x+ox)/2,(p.y+oy)/2,len*0.22,len*0.09,ang,0,Math.PI*2); hctx.fill(); } }
   for(let i=0;i<6;i++){ const a=rng()*Math.PI*2, rr=r*(0.92+rng()*0.18); hctx.fillStyle='rgba(205,195,175,.45)'; hctx.beginPath(); hctx.arc(cx+Math.cos(a)*rr, cy+Math.sin(a)*rr, rng()*1.4+0.6, 0, Math.PI*2); hctx.fill(); }
   hctx.restore();
